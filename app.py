@@ -80,14 +80,34 @@ def newCategory():
 # Edit a category
 @app.route('/categories/<int:category_id>/edit/', methods=['GET', 'POST'])
 def editCategory(category_id):
-    return
+    if 'username' not in login_session:
+        return redirect('/login')
+    editedCategory = session.query(
+        Category).filter_by(id=category_id).one()
+    if request.method == 'POST':
+        if request.form['name']:
+            editedCategory.name = request.form['name']
+            flash('Category Successfully Edited %s' % editedCategory.name)
+            return redirect(url_for('showCategories'))
+    else:
+        return render_template('editCategory.html', category=editedCategory)
 
 #Delete a category
 @app.route('/categories/<int:category_id>/delete/', methods=['GET', 'POST'])
 def deleteCategory(category_id):
-    return
+    if 'username' not in login_session:
+        return redirect('/login')
+    categoryToDelete = session.query(
+        Category).filter_by(id=category_id).one()
+    if request.method == 'POST':
+        session.delete(categoryToDelete)
+        flash('%s Successfully Deleted' % categoryToDelete.name)
+        session.commit()
+        return redirect(url_for('showCategories'))
+    else:
+        return render_template('deleteCategory.html', category=categoryToDelete)
 
-
+    
 ### CATEGORY ITEMS OPERATIONS ###
 @app.route('/categories/<int:category_id>/items/')
 def showCategoryItems(category_id):
@@ -161,7 +181,7 @@ def deleteCategoryItem(category_id, item_id):
         flash('Item Successfully Deleted')
         return redirect(url_for('showCategoryItems', category_id=category_id))
     else:
-        return render_template('delete_item.html', item=itemToDelete)
+        return render_template('delete_category_item.html', item=itemToDelete)
 
 
 ### LOGIN HANDLERS ###
