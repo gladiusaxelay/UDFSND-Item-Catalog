@@ -67,8 +67,9 @@ def newCategory():
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
-        newCategory = Category(name=request.form['name'],
-         user_id = login_session['user_id'])
+        newCategory = Category(
+            name = request.form['name'],
+            user_id = login_session['user_id'])
         session.add(newCategory)
         flash('New Category %s Successfully Created' % newCategory.name)
         session.commit()
@@ -78,7 +79,23 @@ def newCategory():
 
 
 ### CATEGORY ITEMS OPERATIONS ###
-
+# Create a new category item
+@app.route('/categories/item/new/', methods=['GET', 'POST'])
+def newCategoryItem():
+    categories = session.query(Category).all()
+    if 'username' not in login_session:
+        return redirect('/login')
+    if request.method == 'POST':
+        insertNewItem = CategoryItem(
+            name = request.form['name'],
+            description = request.form['description'],
+            user_id = login_session['user_id'])
+        session.add(insertNewItem)
+        flash('New Item %s Successfully Created' % newCategoryItem.name)
+        session.commit()
+        return redirect(url_for('showCategories'))
+    else:
+        return render_template('new_category_item.html', categories = categories)
 
 ### LOGIN HANDLERS ###
 
@@ -357,7 +374,7 @@ def disconnect():
         flash("You were not logged in", 'danger')
         return redirect(url_for('showCategories'))
 
-        
+
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
