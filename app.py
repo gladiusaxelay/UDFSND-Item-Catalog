@@ -136,8 +136,6 @@ def editCategoryItem(category_id, item_id):
             editedItem.name = request.form['name']
         if request.form['description']:
             editedItem.description = request.form['description']
-        if request.form['category']:
-            editedItem.category = request.form['category']
         session.add(editedItem)
         session.commit()
         flash("Category item edited")
@@ -154,7 +152,17 @@ def editCategoryItem(category_id, item_id):
     '/categories/<int:category_id>/item/<int:item_id>/delete',
     methods=['GET', 'POST'])
 def deleteCategoryItem(category_id, item_id):
-    return
+    if 'username' not in login_session:
+        return redirect('/categories')
+    itemToDelete = session.query(CategoryItem).filter_by(id=item_id).one()
+    if request.method == 'POST':
+        session.delete(itemToDelete)
+        session.commit()
+        flash('Item Successfully Deleted')
+        return redirect(url_for('showCategoryItems', category_id=category_id))
+    else:
+        return render_template('delete_item.html', item=itemToDelete)
+
 
 ### LOGIN HANDLERS ###
 
