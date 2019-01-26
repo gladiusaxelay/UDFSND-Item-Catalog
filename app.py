@@ -105,22 +105,56 @@ def showCategoryItems(category_id):
         items=items)
 
 # Create a new category item
-@app.route('/categories/item/new/', methods=['GET', 'POST'])
-def newCategoryItem():
-    categories = session.query(Category).all()
+@app.route('/categories/<int:category_id>/item/new/', methods=['GET', 'POST'])
+def newCategoryItem(category_id):
+    category = session.query(Category).filter_by(id=category_id).one()
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
         insertNewItem = CategoryItem(
             name = request.form['name'],
             description = request.form['description'],
-            user_id = login_session['user_id'])
+            user_id = login_session['user_id'], 
+            category_id = category_id)
         session.add(insertNewItem)
-        flash('New Item %s Successfully Created' % newCategoryItem.name)
+        flash('New Item %s Created' % insertNewItem.name)
         session.commit()
+        return redirect(url_for('showCategoryItems', category_id=category_id))
+    else:
+        return render_template('new_category_item.html', category = category)
+
+# Edit category item
+@app.route('/categories/<int:category_id>/item/<int:item_id>/edit',
+    methods=['GET', 'POST'])
+def editCategoryItem(category_id, item_id):
+    editedItem = session.query(
+        CategoryItem).filter_by(id=item_id).one()
+    if editedItem.user_id != login_session['user_id']:
+        return redirect('/categories/')
+    if request.method == 'POST':
+        if request.form['name']:
+            editedItem.name = request.form['name']
+        if request.form['description']:
+            editedItem.description = request.form['description']
+        if request.form['category']:
+            editedItem.category = request.form['category']
+        session.add(editedItem)
+        session.commit()
+        flash("Category item edited")
         return redirect(url_for('showCategories'))
     else:
-        return render_template('new_category_item.html', categories = categories)
+        categories = session.query(Category).all()
+        return render_template(
+            'edit_category_item.html',
+            categories=categories,
+            item=editedItem)
+
+# Delete category item
+@app.route(
+    '/categories/<int:category_id>/item/<int:item_id>/delete',
+    methods=['GET', 'POST'])
+def deleteCategoryItem(category_id, item_id):
+    return
 
 ### LOGIN HANDLERS ###
 
