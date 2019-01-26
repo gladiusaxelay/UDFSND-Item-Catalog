@@ -77,8 +77,33 @@ def newCategory():
     else:
         return render_template('new_category.html')
 
+# Edit a category
+@app.route('/categories/<int:category_id>/edit/', methods=['GET', 'POST'])
+def editCategory(category_id):
+    return
+
+#Delete a category
+@app.route('/categories/<int:category_id>/delete/', methods=['GET', 'POST'])
+def deleteCategory(category_id):
+    return
+
 
 ### CATEGORY ITEMS OPERATIONS ###
+@app.route('/categories/<int:category_id>/items/')
+def showCategoryItems(category_id):
+    """show the items in the category"""
+    category = session.query(Category).filter_by(id=category_id).one()
+    categories = session.query(Category).all()
+    creator = getUserInfo(category.user_id)
+    items = session.query(
+        CategoryItem).filter_by(category_id=category_id).order_by(CategoryItem.id.desc())
+    return render_template(
+        'category_items.html', 
+        category=category, 
+        categories=categories, 
+        creator=creator, 
+        items=items)
+
 # Create a new category item
 @app.route('/categories/item/new/', methods=['GET', 'POST'])
 def newCategoryItem():
