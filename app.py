@@ -35,19 +35,46 @@ session = DBSession()
 @app.route('/api/v1/catalog.json')
 def showCatalogJSON():
     # CODE HERE
+    return
 
 
 @app.route('/api/v1/categories/JSON')
 def categoriesJSON():
     # CODE HERE
+    return
 
 
 @app.route('/api/v1/categories/<int:category_id>/item/<int:category_item_id>/JSON')
 def categoryItemJSON():
     # CODE HERE
+    return
 
 
 ### CATEGORY OPERATIONS ###
+# Show all categories
+@app.route('/')
+@app.route('/categories/')
+def showCategories():
+    categories = session.query(Category).order_by(asc(Category.name))
+    if 'username' not in login_session:
+        return render_template('public_catalog.html', categories=categories)
+    else:
+        return render_template('catalog.html', categories=categories)
+
+# Create a new category
+@app.route('/category/new/', methods=['GET', 'POST'])
+def newCategory():
+    if 'username' not in login_session:
+        return redirect('/login')
+    if request.method == 'POST':
+        newCategory = Category(name=request.form['name'],
+         user_id = login_session['user_id'])
+        session.add(newCategory)
+        flash('New Category %s Successfully Created' % newCategory.name)
+        session.commit()
+        return redirect(url_for('showCategories'))
+    else:
+        return render_template('new_category.html')
 
 
 ### CATEGORY ITEMS OPERATIONS ###
@@ -220,6 +247,7 @@ def gconnect():
 
     data = answer.json()
 
+    login_session['provider'] = 'google'
     login_session['username'] = data['name']
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
@@ -303,25 +331,34 @@ def getUserID(email):
 # Disconnect based on provider
 @app.route('/disconnect')
 def disconnect():
+    print login_session
     if 'provider' in login_session:
         if login_session['provider'] == 'google':
             gdisconnect()
-            del login_session['gplus_id']
-            del login_session['access_token']
+            if 'gplus_id' in login_session:
+                del login_session['gplus_id']
+            if 'credentials' in login_session:
+                del login_session['credentials']
         if login_session['provider'] == 'facebook':
             fbdisconnect()
             del login_session['facebook_id']
-        del login_session['username']
-        del login_session['email']
-        del login_session['picture']
-        del login_session['user_id']
+        if 'username' in login_session:
+            del login_session['username']
+        if 'email' in login_session:
+            del login_session['email']
+        if 'picture' in login_session:
+            del login_session['picture']
+        if 'user_id' in login_session:
+            del login_session['user_id']
         del login_session['provider']
-        flash("You have successfully been logged out.")
-        return redirect(url_for('showCatalog'))
+        flash("You have successfully been logged out.", 'success')
+        return redirect(url_for('showCategories'))
     else:
-        flash("You were not logged in")
-        return redirect(url_for('showCatalog'))
+        flash("You were not logged in", 'danger')
+        return redirect(url_for('showCategories'))
+
         
+
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
     app.debug = True
