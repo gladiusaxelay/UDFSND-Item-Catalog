@@ -32,23 +32,43 @@ session = DBSession()
 ### JSON APIs  ###
 
 
-@app.route('/api/v1/catalog.json')
+@app.route('/api/v1/catalog/JSON')
 def showCatalogJSON():
-    # CODE HERE
-    return
+    items = session.query(CategoryItem).all()
+    return jsonify(Catalog_Items=[h.serialize for h in items])
 
 
 @app.route('/api/v1/categories/JSON')
 def categoriesJSON():
-    # CODE HERE
-    return
+    categories = session.query(Category).all()
+    return jsonify(Categories=[h.serialize for h in categories])
 
 
 @app.route('/api/v1/categories/<int:category_id>/item/<int:category_item_id>/JSON')
-def categoryItemJSON():
-    # CODE HERE
-    return
+def categoryItemJSON(category_id, category_item_id):
+    item = session.query(CategoryItem).filter_by(id=category_item_id, category_id=category_id).one()
+    return jsonify(Category_Item=item.serialize)
 
+
+# # JSON APIs to view Restaurant Information
+# @app.route('/restaurant/<int:restaurant_id>/menu/JSON')
+# def restaurantMenuJSON(restaurant_id):
+#     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+#     items = session.query(MenuItem).filter_by(
+#         restaurant_id=restaurant_id).all()
+#     return jsonify(MenuItems=[i.serialize for i in items])
+
+
+# @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/JSON')
+# def menuItemJSON(restaurant_id, menu_id):
+#     Menu_Item = session.query(MenuItem).filter_by(id=menu_id).one()
+#     return jsonify(Menu_Item=Menu_Item.serialize)
+
+
+# @app.route('/restaurant/JSON')
+# def restaurantsJSON():
+#     restaurants = session.query(Restaurant).all()
+#     return jsonify(restaurants=[r.serialize for r in restaurants])
 
 ### CATEGORY OPERATIONS ###
 # Show all categories
@@ -56,10 +76,12 @@ def categoryItemJSON():
 @app.route('/categories/')
 def showCategories():
     categories = session.query(Category).order_by(asc(Category.name))
+    items = session.query(
+        CategoryItem).order_by(CategoryItem.id.desc())
     if 'username' not in login_session:
         return render_template('public_catalog.html', categories=categories)
     else:
-        return render_template('catalog.html', categories=categories)
+        return render_template('catalog.html', categories=categories, items=items)
 
 # Create a new category
 @app.route('/category/new/', methods=['GET', 'POST'])
@@ -139,7 +161,7 @@ def newCategoryItem(category_id):
         session.add(insertNewItem)
         flash('New Item %s Created' % insertNewItem.name)
         session.commit()
-        return redirect(url_for('showCategoryItems', category_id=category_id))
+        return redirect(url_for('showCategories'))
     else:
         return render_template('new_category_item.html', category = category)
 
@@ -179,7 +201,7 @@ def deleteCategoryItem(category_id, item_id):
         session.delete(itemToDelete)
         session.commit()
         flash('Item Successfully Deleted')
-        return redirect(url_for('showCategoryItems', category_id=category_id))
+        return redirect(url_for('showCategories'))
     else:
         return render_template('delete_category_item.html', item=itemToDelete)
 
@@ -466,4 +488,7 @@ def disconnect():
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
     app.debug = True
+    newUser = User(name= 'claudio', email= 'ippolitop@test.com', picture= 'none')
+    session.add(newUser)
+    session.commit()
     app.run(host='0.0.0.0', port=8080)
