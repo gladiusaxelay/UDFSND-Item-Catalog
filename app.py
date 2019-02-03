@@ -46,29 +46,12 @@ def categoriesJSON():
 
 @app.route('/api/v1/categories/<int:category_id>/item/<int:category_item_id>/JSON')
 def categoryItemJSON(category_id, category_item_id):
-    item = session.query(CategoryItem).filter_by(id=category_item_id, category_id=category_id).one()
-    return jsonify(Category_Item=item.serialize)
+    item = session.query(CategoryItem).filter_by(category_id=category_id, id=category_item_id).first()
+    if item is not None:
+        return jsonify(Category_Item=item.serialize)
+    else:
+        return jsonify(error='item {} or category {} does not exist, please try again.'.format(category_item_id, category_id))
 
-
-# # JSON APIs to view Restaurant Information
-# @app.route('/restaurant/<int:restaurant_id>/menu/JSON')
-# def restaurantMenuJSON(restaurant_id):
-#     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-#     items = session.query(MenuItem).filter_by(
-#         restaurant_id=restaurant_id).all()
-#     return jsonify(MenuItems=[i.serialize for i in items])
-
-
-# @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/JSON')
-# def menuItemJSON(restaurant_id, menu_id):
-#     Menu_Item = session.query(MenuItem).filter_by(id=menu_id).one()
-#     return jsonify(Menu_Item=Menu_Item.serialize)
-
-
-# @app.route('/restaurant/JSON')
-# def restaurantsJSON():
-#     restaurants = session.query(Restaurant).all()
-#     return jsonify(restaurants=[r.serialize for r in restaurants])
 
 ### CATEGORY OPERATIONS ###
 # Show all categories
