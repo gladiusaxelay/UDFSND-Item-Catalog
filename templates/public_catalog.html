@@ -21,30 +21,30 @@
 <div class="row padding-top padding-bottom">
 	<div class="col-md-1"></div>
 	<div class="col-md-10 padding-none">
-	<img src="/static/catalog-icon-7353.jpg" class="circle responsive-img">
+		<img src="/static/catalog-icon-7353.jpg" class="circle responsive-img">
 	</div>
 	<div class="col-md-1"></div>
 </div>
 
 <div class="row">
-		<div class="col-md-1"></div>
-		<div class="col-md-3">
-			<h4>Categories</h4>
-			{% for category in categories %}
-			<a href="{{url_for('showPublicCategoryItems', category_id = category.id)}}">
-				<div class="category-item">
-					<h5>{{category.name}}</h5>
-				</div>
-			</a>
-			<h6>Owner: {{category.user.name}}</h6>
-			{% endfor %} {% if items !=[] %}
-			<h4>Latest items</h4>
-			{% for i in items %}
+	<div class="col-md-1"></div>
+	<div class="col-md-3">
+		<h4>Categories</h4>
+		{% for category in categories %}
+		<a href="{{url_for('showPublicCategoryItems', category_id = category.id)}}">
 			<div class="category-item">
-				<h5>{{i.name}} (from: {{i.category.name}})</h5>
+				<h5>{{category.name}}</h5>
 			</div>
-			{% endfor %}
+		</a>
+		<h6>Owner: {{category.user.name}}</h6>
+		{% endfor %} {% if items !=[] %}
+		<h4>Latest items</h4>
+		{% for i in items %}
+		<div class="category-item">
+			<h5>{{i.name}} (from: {{i.category.name}})</h5>
 		</div>
+		{% endfor %}
 	</div>
-	{% endif %}
+</div>
+{% endif %}
 {% endblock %}

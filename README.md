@@ -20,7 +20,6 @@ This RESTful web application is built using the Python framework Flask along wit
 
 1. On the repository ```vagrant/``` sub-directory do ```vagrant up```. This will make Vagrant download and install the Linux image and dependencies. It may take a while.
 2. After it finishes, run ```vagrant ssh``` to log in to this newly-installed VM.
-3. Put the ```newsdata.sql``` into the ```vagrant/``` directory, which is shared with your virtual machine.
 
 ## Running the code
 
@@ -35,19 +34,17 @@ python app.py
 
 ### JSON endpoints
 
-The output on your terminal should be as:
-
-Returns all items in the catalog
+API to return all items in the catalog:
 ```
 /api/v1/catalog/JSON
 ```
 
-Returns all categories in the catalog
+API to return all categories in the catalog:
 ```
 /api/v1/categories/JSON
 ```
 
-Returns an item of the catalog
+API to return an item of the catalog:
 ```
 /api/v1/categories/<int:category_id>/item/<int:category_item_id>/JSON
 ```
@@ -55,5 +52,5 @@ Returns an item of the catalog
 ## Acknowledgments
 
 * Vagrant VM configuration and DB provided by Udacity.
-* Fromt-end done with [Materialize](https://materializecss.com/)
-* Catalog icon from [here](https://www.freeiconspng.com/img/7353)
+* Fromt-end done with [Materialize].(https://materializecss.com/)
+* Catalog icon from [here](https://www.freeiconspng.com/img/7353).

@@ -17,18 +17,18 @@
 
 <body>
 
-    <div class="row divider blue">
-        <div class="col-md-12"></div>
+  <div class="row divider blue">
+    <div class="col-md-12"></div>
+  </div>
+
+  <div class="row padding-top padding-bottom">
+    <div class="col-md-1"></div>
+    <div class="col-md-10 padding-none">
+      <img src="/static/catalog-icon-7353.jpg" class="circle responsive-img">
     </div>
-    
-    <div class="row padding-top padding-bottom">
-        <div class="col-md-1"></div>
-        <div class="col-md-10 padding-none">
-        <img src="/static/catalog-icon-7353.jpg" class="circle responsive-img">
-        </div>
-        <div class="col-md-1"></div>
-        <h6>Please log in with your preferred provider</h6>
-      </div>
+    <div class="col-md-1"></div>
+    <h6>Please log in with your preferred provider</h6>
+  </div>
 
   <!-- GOOGLE PLUS SIGN IN-->
 
@@ -93,8 +93,11 @@
 
     (function (d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) { return; }
-      js = d.createElement(s); js.id = id;
+      if (d.getElementById(id)) {
+        return;
+      }
+      js = d.createElement(s);
+      js.id = id;
       js.src = "https://connect.facebook.net/en_US/sdk.js";
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
@@ -137,12 +140,11 @@
       <a href='javascript:sendTokenToServer()'>Login with Facebook</a>
     </fb:login-button>
   </button>
-  
+
   <!--END FACEBOOK SIGN IN -->
 
 </body>
 
 {% endblock %}
+
 </html>
-
-
