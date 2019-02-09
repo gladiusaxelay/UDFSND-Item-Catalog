@@ -62,7 +62,10 @@ def showCategories():
     items = session.query(
         CategoryItem).order_by(CategoryItem.id.desc())
     if 'username' not in login_session:
-        return render_template('public_catalog.html', categories=categories)
+        flash('Welcome to this all-purpose catalog app')
+        flash('Please log in so you can create your own categories and items')
+        flash('Current items in the database are shown below')
+        return render_template('public_catalog.html', categories=categories, items=items)
     else:
         return render_template('catalog.html', categories=categories, items=items)
 
@@ -70,14 +73,20 @@ def showCategories():
 @app.route('/category/new/', methods=['GET', 'POST'])
 def newCategory():
     if 'username' not in login_session:
-        return redirect('/login')
-    if request.method == 'POST':
+        flash('Please log in to create a new category')
+        return redirect(url_for('showCategories'))
+
+    if request.method == 'POST' and request.form['name']!='':
         newCategory = Category(
             name = request.form['name'],
             user_id = login_session['user_id'])
         session.add(newCategory)
-        flash('New Category %s Successfully Created' % newCategory.name)
+        flash('New category %s successfully created!' % (newCategory.name))
         session.commit()
+        return redirect(url_for('showCategories'))
+    
+    elif request.method == 'POST':
+        flash('Nothing created, operation cancelled or no name given')
         return redirect(url_for('showCategories'))
     else:
         return render_template('new_category.html')
@@ -85,17 +94,38 @@ def newCategory():
 # Edit a category
 @app.route('/categories/<int:category_id>/edit/', methods=['GET', 'POST'])
 def editCategory(category_id):
-    if 'username' not in login_session:
-        return redirect('/login')
     editedCategory = session.query(
         Category).filter_by(id=category_id).one()
-    if request.method == 'POST':
+    if login_session['user_id'] != editedCategory.user_id:
+        flash('Cannot edit this category as you are not its owener')
+        return redirect(url_for('showCategories'))
+    if request.method == 'POST' and request.form['name'] != editedCategory.name:
         if request.form['name']:
             editedCategory.name = request.form['name']
-            flash('Category Successfully Edited %s' % editedCategory.name)
+            flash('Category successfully edited to %s' % editedCategory.name)
             return redirect(url_for('showCategories'))
+    elif request.method == 'POST':
+        flash('Nothing changed, operation cancelled or inputs where NULL')
+        return redirect(url_for('showCategories'))
     else:
         return render_template('editCategory.html', category=editedCategory)
+
+
+    if request.method == 'POST' and request.form['name'] != '' and request.form['description'] != '':
+        insertNewItem = CategoryItem(
+            name = request.form['name'],
+            description = request.form['description'],
+            user_id = login_session['user_id'], 
+            category_id = category_id)
+        session.add(insertNewItem)
+        flash('New item %s created' % insertNewItem.name)
+        session.commit()
+        return redirect(url_for('showCategories'))
+    elif request.method == 'POST':
+        flash('Nothing changed, operation cancelled or inputs where NULL')
+        return redirect(url_for('showCategories'))
+    else:
+        return render_template('new_category_item.html', category = category)
 
 #Delete a category
 @app.route('/categories/<int:category_id>/delete/', methods=['GET', 'POST'])
@@ -104,8 +134,11 @@ def deleteCategory(category_id):
         return redirect('/login')
     categoryToDelete = session.query(
         Category).filter_by(id=category_id).one()
+    categoryToDelete2 = session.query(
+        Category).filter_by(id=category_id)
     if request.method == 'POST':
-        session.delete(categoryToDelete)
+        session.query(
+        Category).filter_by(id=category_id).delete()
         flash('%s Successfully Deleted' % categoryToDelete.name)
         session.commit()
         return redirect(url_for('showCategories'))
@@ -114,6 +147,23 @@ def deleteCategory(category_id):
 
     
 ### CATEGORY ITEMS OPERATIONS ###
+@app.route('/categories/public/<int:category_id>/items/')
+def showPublicCategoryItems(category_id):
+    """show the items in the category"""
+    category = session.query(Category).filter_by(id=category_id).one()
+    categories = session.query(Category).all()
+    creator = getUserInfo(category.user_id)
+    items = session.query(
+        CategoryItem).filter_by(category_id=category_id).order_by(CategoryItem.id.desc())
+    
+    flash('(Note that you can only make changes to categories/items you created)')
+    return render_template(
+        'public_category_items.html', 
+        category=category, 
+        categories=categories, 
+        creator=creator, 
+        items=items)
+
 @app.route('/categories/<int:category_id>/items/')
 def showCategoryItems(category_id):
     """show the items in the category"""
@@ -122,28 +172,37 @@ def showCategoryItems(category_id):
     creator = getUserInfo(category.user_id)
     items = session.query(
         CategoryItem).filter_by(category_id=category_id).order_by(CategoryItem.id.desc())
-    return render_template(
+    
+    if login_session['user_id'] == category.user_id:
+        return render_template(
         'category_items.html', 
         category=category, 
         categories=categories, 
         creator=creator, 
         items=items)
 
+    else:
+        return redirect(url_for('showPublicCategoryItems', category_id=category_id))
+
 # Create a new category item
 @app.route('/categories/<int:category_id>/item/new/', methods=['GET', 'POST'])
 def newCategoryItem(category_id):
     category = session.query(Category).filter_by(id=category_id).one()
-    if 'username' not in login_session:
-        return redirect('/login')
-    if request.method == 'POST':
+    if login_session['user_id'] != category.user_id:
+        flash('Cannot add an item to this category as you are not the creator, please log in for verification')
+        return redirect(url_for('showCategories'))
+    if request.method == 'POST' and request.form['name'] != '':
         insertNewItem = CategoryItem(
             name = request.form['name'],
             description = request.form['description'],
             user_id = login_session['user_id'], 
             category_id = category_id)
         session.add(insertNewItem)
-        flash('New Item %s Created' % insertNewItem.name)
+        flash('New item %s created' % insertNewItem.name)
         session.commit()
+        return redirect(url_for('showCategories'))
+    elif request.method == 'POST':
+        flash('Nothing created, operation cancelled or item name missing')
         return redirect(url_for('showCategories'))
     else:
         return render_template('new_category_item.html', category = category)
@@ -155,8 +214,9 @@ def editCategoryItem(category_id, item_id):
     editedItem = session.query(
         CategoryItem).filter_by(id=item_id).one()
     if editedItem.user_id != login_session['user_id']:
+        flash('Cannot edit this item as you are not the creator, please log in for verification')
         return redirect('/categories/')
-    if request.method == 'POST':
+    if request.method == 'POST' and (request.form['name'] != editedItem.name or request.form['description'] != editedItem.description):
         if request.form['name']:
             editedItem.name = request.form['name']
         if request.form['description']:
@@ -164,6 +224,9 @@ def editCategoryItem(category_id, item_id):
         session.add(editedItem)
         session.commit()
         flash("Category item edited")
+        return redirect(url_for('showCategories'))
+    elif request.method == 'POST':
+        flash('Nothing changed, operation cancelled or inputs where NULL')
         return redirect(url_for('showCategories'))
     else:
         categories = session.query(Category).all()
@@ -177,9 +240,10 @@ def editCategoryItem(category_id, item_id):
     '/categories/<int:category_id>/item/<int:item_id>/delete',
     methods=['GET', 'POST'])
 def deleteCategoryItem(category_id, item_id):
-    if 'username' not in login_session:
-        return redirect('/categories')
     itemToDelete = session.query(CategoryItem).filter_by(id=item_id).one()
+    if itemToDelete.user_id != login_session['user_id']:
+        flash('Cannot delete this item as you are not its owner')
+        return redirect('/categories')
     if request.method == 'POST':
         session.delete(itemToDelete)
         session.commit()
@@ -263,13 +327,13 @@ def fbconnect():
     login_session['user_id'] = user_id
 
     output = ''
-    output += '<h1>Welcome, '
+    output += '<h5>Welcome, '
     output += login_session['username']
 
-    output += '!</h1>'
+    output += '!</h5>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 150px; height: 150px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
     flash("Now logged in as %s" % login_session['username'])
     return output
@@ -368,13 +432,13 @@ def gconnect():
     login_session['user_id'] = user_id
 
     output = ''
-    output += '<h1>Welcome, '
+    output += '<h5>Welcome, '
     output += login_session['username']
-    output += '!</h1>'
+    output += '!</h5>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash("you are now logged in as %s" % login_session['username'])
+    output += ' " style = "width: 150px; height: 150px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    flash("You are now logged in as %s" % login_session['username'])
     print ("done!")
     return output
 
@@ -471,7 +535,5 @@ def disconnect():
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
     app.debug = True
-    newUser = User(name= 'claudio', email= 'ippolitop@test.com', picture= 'none')
-    session.add(newUser)
     session.commit()
     app.run(host='0.0.0.0', port=8080)

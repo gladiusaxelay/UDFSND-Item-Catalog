@@ -1,0 +1,39 @@
+{% extends "main.html" %} {% block content %} {% include "header.html" %}
+
+<ul class="collection">
+    <li class="collection-item avatar">
+        <img src="{{ creator.picture}}" alt="" class="circle">
+        <span class="title">{{ category.name }}</span>
+        <p>Created by:<br>
+            <span class="creator">{{ creator.name }}</span>
+        </p>
+    </li>
+</ul>
+
+<div class='flash'>
+    {% with messages = get_flashed_messages() %} {% if messages %}
+
+    <ul>
+        {% for message in messages %}
+        <li> <strong> {{ message }} </strong> </li>
+        {% endfor %}
+    </ul>
+    {% endif %} {% endwith %}
+
+</div>
+
+{% if items !=[] %}
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-3">
+        <h4>Items</h4>
+        {% for i in items %}
+        <div class="category-item">
+            <h6>Name: {{i.name}}</h6>
+            <h6>Description: {{i.description}}</h6>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-1"></div>
+</div>
+{% endif %} {% endblock %}

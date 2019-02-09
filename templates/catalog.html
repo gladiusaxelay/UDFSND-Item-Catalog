@@ -28,7 +28,7 @@
     <div class="col-md-10 padding-none">
         <a href="{{url_for('newCategory')}}">
             <button class="btn btn-default light-blue darken-1" id="new-category">
-				<span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Add Category
+				<span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Create new category
 			</button>
         </a>
     </div>
@@ -44,11 +44,12 @@
                 <h5>{{category.name}}</h5>
             </div>
         </a>
+        <h6>Owner: {{category.user.name}}</h6>
         {% endfor %} {% if items !=[] %}
         <h4>Latest Items</h4>
         {% for i in items %}
         <div class="category-item">
-            <h5>{{i.name}} ({{i.category.name}})</h5>
+            <h5>{{i.name}} (from: {{i.category.name}})</h5>
             <a href="{{url_for('editCategoryItem', category_id = i.category.id, item_id=i.id )}}">Edit</a> |
             <a href="{{url_for('deleteCategoryItem', category_id = i.category.id, item_id=i.id )}}">Delete</a>
         </div>

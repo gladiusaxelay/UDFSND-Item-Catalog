@@ -1,12 +1,12 @@
 <nav>
 	<div class="nav-wrapper light-blue darken-4">
-		<a href="#" class="brand-logo">Catalog Web App</a>
+		<a href="{{url_for('showCategories')}}" class="brand-logo">Catalog Web App</a>
 		<ul id="nav-mobile" class="right hide-on-med-and-down">
-			<li><a href="{{url_for('showCategories')}}">Show All Categories </a></li>
+			<li><a href="{{url_for('showCategories')}}">Home</a></li>
 			{%if 'username' not in session %}
-			<li><a href="{{url_for('showLogin')}}">Click Here to Login </a></li>
+			<li><a href="{{url_for('showLogin')}}">Login</a></li>
 			{% else %}
-			<li><a href="{{url_for('disconnect')}}">Logout </a></li>
+			<li><a href="{{url_for('disconnect')}}">Logout</a></li>
 			{% endif %}
 		</ul>
 	</div>

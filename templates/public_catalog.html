@@ -1,19 +1,7 @@
-{% extends "main.html" %}
-{% block content %}
-<div class="row top-menu">
-	<div class="col-md-10"></div>
-	<div class="col-md-2 text-right">
-		<a href="{{url_for('showLogin')}}">Click Here to Log in </a>
-	</div>
-</div>
+{% extends "main.html" %} {% block content %} {% include "header.html" %}
+
 <div class="row divider blue">
 	<div class="col-md-12"></div>
-</div>
-<div class="row banner main">
-	<div class="col-md-1"></div>
-	<div class="col-md-11 padding-none">
-		<h1>Categories Web App</h1>
-	</div>
 </div>
 
 <div class='flash'>
@@ -33,19 +21,30 @@
 <div class="row padding-top padding-bottom">
 	<div class="col-md-1"></div>
 	<div class="col-md-10 padding-none">
-
+	<img src="/static/catalog-icon-7353.jpg" class="circle responsive-img">
 	</div>
 	<div class="col-md-1"></div>
 </div>
-{% for category in categories %}
-<a href="{{url_for('showCategories', category_id = category.id)}}">
-	<div class="row">
+
+<div class="row">
 		<div class="col-md-1"></div>
-		<div class="col-md-10 category-list">
-			<h3>{{category.name}}</h3>
+		<div class="col-md-3">
+			<h4>Categories</h4>
+			{% for category in categories %}
+			<a href="{{url_for('showPublicCategoryItems', category_id = category.id)}}">
+				<div class="category-item">
+					<h5>{{category.name}}</h5>
+				</div>
+			</a>
+			<h6>Owner: {{category.user.name}}</h6>
+			{% endfor %} {% if items !=[] %}
+			<h4>Latest items</h4>
+			{% for i in items %}
+			<div class="category-item">
+				<h5>{{i.name}} (from: {{i.category.name}})</h5>
+			</div>
+			{% endfor %}
 		</div>
-		<div class="col-md-1"></div>
 	</div>
-</a>
-{% endfor %}
+	{% endif %}
 {% endblock %}
