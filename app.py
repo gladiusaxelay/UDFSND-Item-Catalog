@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request
-from flask import redirect, jsonify, url_for, flash
+from flask import (
+    Flask, render_template, request,
+    redirect, jsonify, url_for, flash)
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, CategoryItem, Category, User
@@ -102,6 +103,8 @@ def newCategory():
 # Edit a category
 @app.route('/categories/<int:category_id>/edit/', methods=['GET', 'POST'])
 def editCategory(category_id):
+    if 'username' not in login_session:
+        return render_template('login.html')
     editedCategory = session.query(
         Category).filter_by(id=category_id).one()
     if login_session['user_id'] != editedCategory.user_id:
@@ -134,27 +137,7 @@ def editCategory(category_id):
         flash('Nothing changed, operation cancelled or inputs where NULL')
         return redirect(url_for('showCategories'))
     else:
-        return render_template('new_category_item.html', category=category)
-
-
-# Delete a category
-@app.route('/categories/<int:category_id>/delete/', methods=['GET', 'POST'])
-def deleteCategory(category_id):
-    if 'username' not in login_session:
-        return redirect('/login')
-    categoryToDelete = session.query(
-        Category).filter_by(id=category_id).one()
-    categoryToDelete2 = session.query(
-        Category).filter_by(id=category_id)
-    if request.method == 'POST':
-        session.query(
-            Category).filter_by(id=category_id).delete()
-        flash('%s Successfully Deleted' % categoryToDelete.name)
-        session.commit()
-        return redirect(url_for('showCategories'))
-    else:
-        return render_template(
-            'deleteCategory.html', category=categoryToDelete)
+        return render_template('new_category_item.html')
 
 
 # CATEGORY ITEMS OPERATIONS
@@ -204,6 +187,8 @@ def showCategoryItems(category_id):
 # Create a new category item
 @app.route('/categories/<int:category_id>/item/new/', methods=['GET', 'POST'])
 def newCategoryItem(category_id):
+    if 'username' not in login_session:
+        return render_template('login.html')
     category = session.query(Category).filter_by(id=category_id).one()
     if login_session['user_id'] != category.user_id:
         flash('Cannot add an item to this category as \
@@ -230,6 +215,8 @@ def newCategoryItem(category_id):
 @app.route('/categories/<int:category_id>/item/<int:item_id>/edit',
            methods=['GET', 'POST'])
 def editCategoryItem(category_id, item_id):
+    if 'username' not in login_session:
+        return render_template('login.html')
     editedItem = session.query(
         CategoryItem).filter_by(id=item_id).one()
     if editedItem.user_id != login_session['user_id']:
@@ -257,13 +244,14 @@ def editCategoryItem(category_id, item_id):
             categories=categories,
             item=editedItem)
 
+
 # Delete category item
-
-
 @app.route(
     '/categories/<int:category_id>/item/<int:item_id>/delete',
     methods=['GET', 'POST'])
 def deleteCategoryItem(category_id, item_id):
+    if 'username' not in login_session:
+        return render_template('login.html')
     itemToDelete = session.query(CategoryItem).filter_by(id=item_id).one()
     if itemToDelete.user_id != login_session['user_id']:
         flash('Cannot delete this item as you are not its owner')
